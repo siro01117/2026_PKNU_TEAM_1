@@ -12,9 +12,11 @@
   const steps = s => Math.max(0, ...[...s.querySelectorAll('[data-step]')].map(e => +e.dataset.step));
 
   function fit() {
-    const k = Math.min(innerWidth / 960, innerHeight / 540);
+    // innerWidth 는 모바일에서 넘친 판 크기까지 따라 커져(판이 커질수록 더 커짐) 화면 밖으로 나갔다. 실제 화면 폭(clientWidth)으로 잰다
+    const VW = document.documentElement.clientWidth, VH = document.documentElement.clientHeight;
+    const k = Math.min(VW / 960, VH / 540);
     // 확대는 transform 대신 zoom: 배치가 화면 픽셀에 맞춰져 가는 눈금 · 선 굵기가 자리마다 달라 보이지 않는다
-    const ox = innerWidth / 2 - 480 * k, oy = innerHeight / 2 - 270 * k;
+    const ox = VW / 2 - 480 * k, oy = VH / 2 - 270 * k;
     for (const el of [stage, ref]) { el.style.zoom = k; el.style.transform = 'none'; el.style.left = ox / k + 'px'; el.style.top = oy / k + 'px'; }
     // 가는 눈금(data-snap)은 양 끝을 화면 픽셀에 맞춰 굵기를 똑같이
     const d = devicePixelRatio;
@@ -64,7 +66,15 @@
     else return;
     e.preventDefault();
   });
-  addEventListener('click', e => go(e.clientX > innerWidth / 3 ? 1 : -1));
+  addEventListener('click', e => go(e.clientX > document.documentElement.clientWidth / 3 ? 1 : -1));   // 왼쪽 1/3 을 누르면 이전, 나머지는 다음
+  // 휴대폰: 왼쪽으로 밀면 다음, 오른쪽으로 밀면 이전
+  let tx = null, ty = null;
+  addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+  addEventListener('touchend', e => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; tx = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
+  }, { passive: true });
   addEventListener('resize', fit);
 
   function fromHash() {
