@@ -8,6 +8,7 @@
   const hud = document.getElementById('hud');
   let n = 1, step = 0;
   const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);   // 배포본(GitHub Pages)에서는 겹쳐 보기 · 실시간 반영을 끈다
+  if (!LOCAL) hud.style.display = 'none';   // 배포본에서는 화면 밖 쪽 번호(작업용)를 숨긴다. 장 안 쪽 번호만 보인다
 
   const steps = s => Math.max(0, ...[...s.querySelectorAll('[data-step]')].map(e => +e.dataset.step));
 

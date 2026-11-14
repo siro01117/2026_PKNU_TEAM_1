@@ -1,5 +1,8 @@
 /* 슬라이드 960x540pt 를 px 그대로 쓰고, 화면 크기에 맞춰 통째로 확대한다 */
 html, body { margin: 0; height: 100%; background: #1b1d22; overflow: hidden; }
+/* 휴대폰 브라우저가 글자만 따로 키우는 것(글자 크기 자동 조정 · 글꼴 부풀리기)을 끈다: 어느 기기에서도 원래 비율 그대로 */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+#stage, #stage * { -webkit-text-size-adjust: none; text-size-adjust: none; max-height: none; }
 #stage { position: absolute; left: 50%; top: 50%; width: 960px; height: 540px; transform-origin: 0 0; }
 .slide { position: absolute; inset: 0; background: #fff; overflow: hidden; display: none;
   font-family: "Noto Sans KR", sans-serif; }
