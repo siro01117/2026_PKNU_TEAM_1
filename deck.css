@@ -1,0 +1,58 @@
+/* 슬라이드 960x540pt 를 px 그대로 쓰고, 화면 크기에 맞춰 통째로 확대한다 */
+html, body { margin: 0; height: 100%; background: #1b1d22; overflow: hidden; }
+#stage { position: absolute; left: 50%; top: 50%; width: 960px; height: 540px; transform-origin: 0 0; }
+.slide { position: absolute; inset: 0; background: #fff; overflow: hidden; display: none;
+  font-family: "Noto Sans KR", sans-serif; }
+.slide.on { display: block; }
+.slide.ghost { display: block; background: transparent; z-index: 2; pointer-events: none; }  /* 전환 중 떠나는 장 */
+.slide > *, .grp > * { position: absolute; box-sizing: border-box; }
+.grp { position: absolute; inset: 0; pointer-events: none; }
+.pic { display: block; }
+.shp { overflow: visible; }
+.txt { display: flex; flex-direction: column; margin: 0; word-break: keep-all; overflow-wrap: break-word; }
+.txt p { margin: 0; position: relative; top: -0.06em; }  /* PPT 첫 줄 기준선에 맞춘 보정 */
+
+/* 단계(→로 하나씩 나타남) */
+/* 모션은 0.5초 이내: 0.3초 + 같은 단계 안 늦춤 0.2초 이하 */
+[data-step] { transition: opacity .3s ease, translate .3s cubic-bezier(.2,.7,.2,1), clip-path .4s cubic-bezier(.2,.7,.2,1); }
+[data-step].hide { opacity: 0; translate: 0 8px; }
+[data-step][data-grow].hide { opacity: 1; translate: none; }   /* 막대는 흐려지지 않고 차오른다. !important 를 쓰면 장 전환 때 사라지는 움직임까지 막혀 늦게 사라졌다 */
+[data-grow] { clip-path: inset(0 0 0 0); }   /* none 은 inset 과 섞이지 않아 차오르지 않고 툭 나타났다 */
+[data-grow="y"].hide { clip-path: inset(100% 0 0 0); }
+[data-grow="x"].hide { clip-path: inset(0 100% 0 0); }
+
+/* 겹쳐 보기(o): 원래 PPT 화면 */
+#ref { position: absolute; left: 50%; top: 50%; width: 960px; height: 540px; transform-origin: 0 0;
+  pointer-events: none; opacity: 0; mix-blend-mode: multiply; }
+#ref.on { opacity: .5; }
+#hud { position: fixed; right: 12px; bottom: 10px; color: #8a8f99; font: 12px/1 "Noto Sans KR", sans-serif; }
+
+/* 선 위를 지나가는 대금 덩어리(07장) */
+.blobwrap { left: 0; top: 0; width: 960px; height: 540px; pointer-events: none; }
+.blob { position: absolute; left: -14px; top: -5px; width: 28px; height: 10px; opacity: 0; filter: drop-shadow(0 0 2px rgba(36,80,240,.35)); }   /* 선이 불룩하게 부풀어 지나간다 */
+.ripple { position: absolute; left: -14px; top: -8px; width: 28px; height: 16px; opacity: 0; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(36,80,240,.35), rgba(36,80,240,.14) 60%, rgba(36,80,240,0)); }   /* 출발 파동 */
+.blob svg { width: 100%; height: 100%; display: block; }
+
+/* 쪽 번호 · FIG 줄: 바뀐 숫자만 굴러 바뀐다 */
+.roll { display: inline-block; position: relative; clip-path: inset(0 -2px); }   /* overflow 대신 clip-path: 글자 바닥선이 그대로 */
+.roll .o { position: absolute; left: 0; top: 0; }
+.roll .n { display: inline-block; }
+
+/* 단계가 오면 흐려지는 것(비활성): data-dim 단계부터 */
+[data-dim] { transition: opacity .3s ease; }
+.slide[data-at="1"] [data-dim="1"], .slide[data-at="2"] [data-dim="1"], .slide[data-at="2"] [data-dim="2"] { opacity: .35; }
+
+/* 글자 위를 훑는 빛(09 간지 ALL-IN-ONE · PAY-TRACKING): 2초 쉬고 0.9초 동안 왼쪽 → 오른쪽 */
+.shimmer { color: transparent !important; -webkit-background-clip: text; background-clip: text;
+  background-image: linear-gradient(105deg, #0E1530 42%, #5B7BFF 49%, #A9BBFF 50%, #5B7BFF 51%, #0E1530 58%);
+  background-size: 300% 100%; background-position: 100% 0; animation: shimmer 3s ease-in-out .6s infinite; }
+@keyframes shimmer { 0% { background-position: 100% 0; } 30%, 100% { background-position: 0 0; } }
+.shimmer.light { background-image: linear-gradient(105deg, #A3ABBF 30%, #FFFFFF 50%, #A3ABBF 70%); background-repeat: repeat-x; animation: none; }   /* 회색 글 위로 흰 빛. 움직임은 motion.js runShimmer: 두 낱말을 한 줄로 보고 빛이 이어서 지나간다 */
+.shimmer.bar { color: inherit !important; -webkit-background-clip: border-box; background-clip: border-box; }   /* 바는 글자가 아니라 면 전체에 같은 빛 */
+
+/* 단계에서 그어지는 선(10장)은 흐려지며 나오지 않고 바로 보이고, 선이 그어진다 */
+.slide[data-n="10"] [data-name="Picture 12"], .slide[data-n="10"] [data-name="Picture 13"], .slide[data-n="10"] [data-name="Picture 14"], .slide[data-n="10"] [data-name="Picture 15"] { transition: none; translate: none; }
+/* 10장 세 기관: 단계 0 에서는 화면 가운데(100px 아래), 단계 1 에서 제자리로 올라간다 */
+.slide[data-n="10"] .inst { transition: transform .18s cubic-bezier(.2,.7,.2,1); }
+.slide[data-n="10"]:not([data-at="1"]) .inst { transform: translateY(90px); }
