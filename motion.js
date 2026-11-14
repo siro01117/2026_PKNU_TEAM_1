@@ -409,10 +409,12 @@
     return out;
   }
 
+  const CUT = new Set(['2-3']);   // 02 목차 ↔ 03 간지: 전환 모션 없이 바로 (11/14)
   function play(A, B) {
     document.querySelectorAll('[data-role]').forEach(e => e._restore?.());
     document.querySelectorAll('.slide.ghost').forEach(g => g.classList.remove('ghost'));
     document.getAnimations().forEach(a => { if (!(a instanceof CSSTransition) && a.effect?.getTiming().iterations !== Infinity) a.finish(); });
+    if (CUT.has([A.dataset.n, B.dataset.n].sort((x, y) => x - y).join('-'))) return;   // 전환 모션 없이 바로 바뀌는 장 사이
     const sameB = new Set([...B.children].map(e => SIG.get(e))), sameA = new Set([...A.children].map(e => SIG.get(e)));
     A.classList.add('ghost');
     const o = B.getBoundingClientRect(), k = o.width / 960;
